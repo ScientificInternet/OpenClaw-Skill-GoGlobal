@@ -88,7 +88,7 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 - login_url = https://bwh81.net/login
 - csv_url = https://bwh81.net/whmcsExportServiceInfoCsv.php
 - clients_page_url = https://help.bwh8l.net/index.html
-- clients_page_fallback_url = https://help.bwh8l.net/index.html
+- clients_page_fallback_url = {产品侧备用下载页}
 
 规则：
 
@@ -97,6 +97,8 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 3. 登录与CSV导出走bwh81.net（login_url和csv_url）
 4. 客户端下载页优先用clients_page_url
 5. 用户说下载页打不开时，立即切clients_page_fallback_url
+6. 正式版里clients_page_fallback_url必须和clients_page_url不同；内测临时同址只允许短期使用 <!-- 🆕 v3.1 -->
+7. bwh8l.net和bwh81.net是产品侧指定入口，不要自行纠正、猜测或替换域名 <!-- 🆕 v3.1 -->
 
 ---
 
@@ -169,7 +171,7 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 
 每次用户贴API返回结果时，先检查是否包含错误。
 
-**如果包含 invalid api key / authentication failed / permission denied：**
+**如果包含 invalid api key / authentication failed：**
 ```
 这个返回说明控制链接没有通过验证。
 
@@ -177,6 +179,18 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 {csv_url}
 
 把整段CSV重新复制给我，不要删任何字段。
+```
+设置：waiting_for=csv_input
+
+**如果包含 permission denied：** <!-- 🆕 v3.1 拆分permission denied -->
+```
+这个返回说明当前账户不允许API继续执行。
+
+如果你这份CSV里的服务器开了两步验证，
+就不要继续重试同一条控制链接了。
+请先换一台API不受限的VPS，或者处理掉这个限制后重新导出新的CSV。
+
+把新的整段CSV重新贴给我，不要删任何字段。
 ```
 设置：waiting_for=csv_input
 
@@ -283,8 +297,10 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 你需要换一台可用的VPS，再把新的CSV给我。
 ```
 
-**如果is_2fa_enabled=1：** <!-- 🆕 v3.0 新增 -->
-不中断流程，只记录状态。后续API如果报权限错误，再提示用户改用手动面板方式。
+**如果is_2fa_enabled=1：** <!-- ✏️ v3.1 修复2FA死循环 -->
+不中断流程，只记录状态。
+如果后续任何API返回`permission denied`，不要再让用户重复打开同一条控制链接。
+直接提示用户：这台机器当前不适合继续走API自动化；请换一台API不受限的VPS，或者处理掉这个限制后重新导出新的CSV。
 
 **成功后输出：**
 ```
@@ -341,7 +357,16 @@ https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
 
 设置：waiting_for=start_result, resume_hint=等用户启动VPS后贴返回结果
 
-收到start_result后再查一次getLiveServiceInfo。
+收到start_result后，立刻发： <!-- ✏️ v3.1 状态闭环 -->
+```
+启动请求已经发出了。
+
+现在再检查一次运行状态。
+请打开这个链接，把结果完整贴给我：
+https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
+```
+
+设置：waiting_for=live_status_result, resume_hint=等用户再次贴getLiveServiceInfo返回结果
 
 ### Step 2.3 判断系统
 
@@ -415,7 +440,15 @@ https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
 
 设置：waiting_for=start_result_after_reinstall, resume_hint=等用户贴重装后启动结果
 
-收到后等30-60秒，回到Step 2.2查getLiveServiceInfo。
+收到start_result_after_reinstall后，立刻发： <!-- ✏️ v3.1 状态闭环 -->
+```
+好，给它30-60秒启动时间。
+
+然后再打开这个链接，把结果完整贴给我：
+https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
+```
+
+设置：waiting_for=live_status_result, resume_hint=等用户贴重装后getLiveServiceInfo返回结果
 
 ---
 
@@ -444,12 +477,28 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 
 ### Step 3.2 处理后台安装返回
 
-如果返回含纯数字PID → 保存install_pid，xui_status_checks=0
-如果没有数字而是timeout/killed/empty → 先查日志：
+<!-- ✏️ v3.1 PID解析放宽+分支补全 -->
+如果返回里能提取到任何连续数字：
+- 取第一段连续数字保存为install_pid
+- 设置xui_status_checks=0
+
+如果没有数字，但包含started/running/success/ok/pid这类已启动信号：
+- 视为后台安装已经启动
+- 设置xui_status_checks=0
+
+如果明确是timeout/killed/empty/not found：
+先查日志：
 ```
 https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-30%20%2Froot%2Fgoglobal-3xui-install.log
 ```
-设置：waiting_for=xui_install_log
+设置：waiting_for=xui_install_log, resume_hint=等用户贴安装日志
+
+如果完全看不出后台安装有没有启动：
+```
+后台安装的返回不够明确。
+请把刚才那条命令的原始返回完整再贴一次，不要删字。
+```
+设置：waiting_for=install_pid, resume_hint=等用户重新贴后台安装返回
 
 正常后输出：
 ```
@@ -517,6 +566,19 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ```
 设置：waiting_for=xui_menu_output
 
+收到xui_menu_output后： <!-- 🆕 v3.1 状态闭环 -->
+
+如果能提取到panel_port或panel_path，
+就按panel_path规范化规则构造panel_url，
+然后继续执行"第二步：再取登录信息"。
+
+如果还是拿不到完整面板地址：
+```
+我还没拿到完整面板地址。
+请把x-ui settings的完整输出再贴一次。
+```
+设置：waiting_for=xui_access_info_part1, resume_hint=等用户重新贴x-ui settings结果
+
 **第二步：**
 ```
 再取登录信息。
@@ -536,6 +598,20 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=x-ui%20resetuser
 ```
 设置：waiting_for=xui_resetuser_result
+
+收到xui_resetuser_result后： <!-- 🆕 v3.1 状态闭环 -->
+
+如果返回里直接出现新的用户名和密码：
+- 提取新凭据
+- 继续走"正常输出"
+
+如果返回里没有直接显示新凭据：
+```
+用户名密码已经重置。
+请再打开这个链接，把新的登录信息贴给我：
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
+```
+设置：waiting_for=xui_access_info_part2, resume_hint=等用户贴用户名密码日志
 
 **正常输出：**
 ```
@@ -827,6 +903,14 @@ iPhone/iPad：
 ```
 设置：waiting_for=node_visible_in_client
 
+收到"看到节点了"后： <!-- 🆕 v3.1 状态闭环 -->
+```
+好，现在选中my-node，然后打开连接开关。
+
+连好后回我：已连接
+```
+设置：waiting_for=client_connected, resume_hint=等用户确认客户端已连接
+
 **客户端显示连接成功但网页打不开：** <!-- 🆕 v3.0 新增 -->
 ```
 先检查客户端是不是只连上了但没有接管系统网络。
@@ -838,6 +922,20 @@ iPhone/iPad：
 确认后回我：开关打开了
 ```
 设置：waiting_for=proxy_switch_confirmed
+
+收到"开关打开了"后： <!-- 🆕 v3.1 状态闭环 -->
+```
+好，现在再做一次基础验证。
+
+请重新打开：
+1. google.com
+2. whatismyip.com
+
+然后告诉我：
+- Google能不能打开
+- whatismyip显示的IP是不是{vps_ip}
+```
+设置：waiting_for=connectivity_check, resume_hint=等用户反馈Google和IP检查结果
 
 ---
 
@@ -868,6 +966,22 @@ iPhone/iPad：
 连好后再打开whatismyip.com，把显示的IP发我。
 ```
 设置：waiting_for=ip_recheck
+
+收到ip_recheck后： <!-- 🆕 v3.1 状态闭环 -->
+
+如果whatismyip显示的IP已经是{vps_ip}：
+- 继续Step 6.2 AI可用性验证
+
+如果还不是{vps_ip}：
+```
+说明系统流量还没有走到这台服务器。
+
+请回到客户端，删除刚才导入的节点后，
+用管理面板里的分享/复制链接重新导入一次。
+
+重新导入后再打开whatismyip.com，把显示的IP发我。
+```
+保持：waiting_for=ip_recheck, resume_hint=等用户再次反馈whatismyip显示的IP
 
 正常后：verified_google=true, verified_ip=true
 
