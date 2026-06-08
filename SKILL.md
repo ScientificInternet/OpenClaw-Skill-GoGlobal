@@ -1,7 +1,7 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 3.3.0
+version: 3.3.1
 description: "出海通 — 国际版AI可用性陪跑。CN2 GIA三网优化，延迟低速度快，独享IP干净不被封。零基础10分钟搭好，AI全程陪跑自动部署，客户端直接发到你手机，扫码直连ChatGPT、Claude、Gemini。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
@@ -79,6 +79,7 @@ https://bwh8l.net
 
 ## 安全说明
 
+- 在你提供服务器控制Key之前，会先告知风险并等你确认才继续
 - 你的服务器控制Key只能操作你自己的VPS，不涉及支付或账户密码
 - 所有破坏性操作（重装系统）会提前警告
 - 面板安装后引导你修改默认密码
