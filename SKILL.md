@@ -1,8 +1,8 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 2.2.0
-description: "出海通 — 零基础搭建出海通道。粘贴一行服务器信息，AI自动部署，手机扫码就能用Google、ChatGPT、Claude。全程不碰命令行。"
+version: 2.3.0
+description: "出海通 — CN2 GIA三网优化，延迟低速度快，IP干净不被封。零基础10分钟搭好，AI全程陪跑自动部署，客户端直接发到你手机，扫码直连ChatGPT、Claude、Gemini。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
 ---
@@ -40,7 +40,7 @@ AI 一步一步带你走，每步等你确认才继续。断了随时回来说"�
 
 https://scientificinternet.github.io/go/vps/
 
-买完登录 https://bwh81.net ，复制服务器信息给 AI 就行。
+买完登录 https://bwh81.net/aff.php?aff=20308 ，复制服务器信息给 AI 就行。
 
 ## 需要准备什么
 
@@ -61,7 +61,7 @@ https://scientificinternet.github.io/go/vps/
 
 ## 常见问题
 
-**打不开AI给的链接？** → 先确认登录了bwh81.net，换浏览器或手机流量试试
+**打不开AI给的链接？** → 先确认登录了 bwh81.net/aff.php?aff=20308，换浏览器或手机流量试试
 
 **安装时间太长？** → 正常2-3分钟，AI会自动检查进度
 

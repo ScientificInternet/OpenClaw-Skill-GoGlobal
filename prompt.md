@@ -160,7 +160,7 @@ https://scientificinternet.github.io/go/vps/
 现在我需要你的服务器信息。
 
 请这样做：
-1. 打开 https://bwh81.net 并登录
+1. 打开 https://bwh81.net/aff.php?aff=20308 并登录
 2. 打开这个链接：
    https://bwh81.net/whmcsExportServiceInfoCsv.php
 3. 把页面里的整段内容完整复制给我
@@ -482,17 +482,124 @@ http://{vps_ip}:{panel_port}/{panel_path}/
 
 设置：waiting_for=device_type, resume_hint=等用户说设备类型
 
-### Step 5.2 按设备分发指引（只发对应平台，不混发）
+### Step 5.2 下载客户端
+
+用户的VPS在海外，能访问GitHub。用户在国内，可能打不开GitHub。所以用VPS帮用户下载，OpenClaw直接把安装包发到聊天里。
+
+**下载策略：三级fallback**
+
+**第一优先：OpenClaw直发文件**
+
+agent通过basicShell/exec让VPS下载客户端安装包，然后通过OpenClaw把文件发给用户。
+
+各平台下载命令：
+
+Android（v2rayNG APK）：
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=curl%20-Lo%20%2Ftmp%2Fv2rayNG.apk%20$(curl%20-s%20https%3A%2F%2Fapi.github.com%2Frepos%2F2dust%2Fv2rayNG%2Freleases%2Flatest%20%7C%20grep%20'browser_download_url.*universal.*apk'%20%7C%20head%20-1%20%7C%20cut%20-d%22%20-f4)%20%26%26%20ls%20-la%20%2Ftmp%2Fv2rayNG.apk
+```
+
+Windows（v2rayN ZIP）：
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=curl%20-Lo%20%2Ftmp%2Fv2rayN.zip%20$(curl%20-s%20https%3A%2F%2Fapi.github.com%2Frepos%2F2dust%2Fv2rayN%2Freleases%2Flatest%20%7C%20grep%20'browser_download_url.*windows-64.*zip'%20%7C%20head%20-1%20%7C%20cut%20-d%22%20-f4)%20%26%26%20ls%20-la%20%2Ftmp%2Fv2rayN.zip
+```
+
+Mac（V2rayU DMG）：
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=curl%20-Lo%20%2Ftmp%2FV2rayU.dmg%20$(curl%20-s%20https%3A%2F%2Fapi.github.com%2Frepos%2Fyanue%2FV2rayU%2Freleases%2Flatest%20%7C%20grep%20'browser_download_url.*dmg'%20%7C%20head%20-1%20%7C%20cut%20-d%22%20-f4)%20%26%26%20ls%20-la%20%2Ftmp%2FV2rayU.dmg
+```
+
+下载成功后（ls -la显示文件大小 > 0），通过OpenClaw发送文件给用户：
+```
+文件已经下好了，我发给你。
+```
+
+如果OpenClaw成功发送文件 → 跳到Step 5.3安装指引
+
+**第二优先：VPS临时下载页**
+
+如果OpenClaw无法发送文件（权限不支持、文件太大、接口不可用），用VPS开一个临时下载页面：
+
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=cd%20%2Ftmp%20%26%26%20nohup%20python3%20-m%20http.server%208888%20%3E%2Fdev%2Fnull%202%3E%261%20%26%20echo%20started
+```
+
+然后告诉用户：
+```
+我在你的服务器上开了一个临时下载页面。
+
+请在浏览器打开：http://{vps_ip}:8888/
+
+找到对应文件点击下载：
+- Android手机下载：v2rayNG.apk
+- Windows电脑下载：v2rayN.zip
+- Mac电脑下载：V2rayU.dmg
+
+下载完告诉我：下好了
+```
+
+设置：waiting_for=client_downloaded, resume_hint=等用户确认客户端已下载
+
+用户下载完后，关掉临时服务：
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=pkill%20-f%20'http.server%208888'%20%26%26%20echo%20stopped
+```
+
+**第三优先：引导用户自行获取**
+
+如果VPS临时下载页也不可用（端口被挡等），按设备给备用方案：
+
+Android：
+```
+在手机应用商店搜索"v2rayNG"试试，部分国内商店有。
+如果搜不到，找一个能正常上网的朋友帮你从GitHub下载APK发给你。
+```
+
+Windows/Mac：
+```
+找一个能正常上网的朋友帮你下载，让他发给你：
+Windows: https://github.com/2dust/v2rayN/releases
+Mac: https://github.com/yanue/V2rayU/releases
+```
+
+**iOS特殊处理（不经过VPS下载）：**
+
+iOS客户端只能从App Store装，无法通过VPS下载。先问：
+```
+你有外区的Apple ID吗？（美区、日区、港区都行）
+```
+
+有 → 切换到外区账号，搜索安装Shadowrocket或V2Box（免费）
+
+没有 →
+```
+需要注册一个外区Apple ID，很简单：
+
+1. 浏览器打开 appleid.apple.com
+2. 点"创建Apple ID"
+3. 国家/地区选"美国"
+4. 用一个没注册过Apple ID的邮箱
+5. 地址搜"美国地址生成器"随便填一个
+6. 注册完成
+7. 手机App Store退出当前账号，用新账号登录
+8. 搜索"V2Box"或"Streisand"（免费）安装
+9. 装完切回你的中国账号
+
+装好后回我：装好了
+```
+
+设置：waiting_for=ios_app_installed, resume_hint=等用户确认iOS客户端已安装
+
+### Step 5.3 安装和导入指引
+
+客户端已经在用户设备上了。按设备给导入指引（只发对应平台）：
 
 **iPhone/iPad：**
 ```
-按这个来：
-
-1. 去App Store安装Shadowrocket
-   没有外区账号就装V2Box或Streisand
-2. 回到管理面板
-3. 点节点旁边的二维码图标
-4. 在App里用扫描二维码导入
+1. 在手机浏览器打开管理面板
+2. 点节点旁边的二维码图标
+3. 截图保存
+4. 打开App → 点 + → 扫描二维码 → 扫截图
 5. 打开连接开关
 6. 弹VPN权限点允许
 
@@ -501,39 +608,37 @@ http://{vps_ip}:{panel_port}/{panel_path}/
 
 **Android：**
 ```
-按这个来：
-
-1. 安装v2rayNG
-2. 回到管理面板
+1. 安装刚才下载的v2rayNG.apk
+   如果提示"未知来源"点允许
+2. 在手机浏览器打开管理面板
 3. 点节点旁边的复制/分享按钮
-4. 打开v2rayNG
-5. 点 + → 从剪贴板导入
-6. 点连接
-7. 弹VPN权限点允许
+4. 打开v2rayNG → 点 + → 从剪贴板导入
+5. 点连接
+6. 弹VPN权限点允许
 
 连好后回我：已连接
 ```
 
 **Windows：**
 ```
-按这个来：
-
-1. 下载并打开v2rayN
-2. 回到管理面板复制节点链接
-3. 在v2rayN里从剪贴板导入
-4. 打开系统代理
+1. 解压刚才下载的v2rayN.zip
+2. 运行v2rayN.exe
+   如果被拦截：点"更多信息"→"仍要运行"
+3. 在浏览器打开管理面板，复制节点链接
+4. 在v2rayN里点"服务器"→"从剪贴板导入"
+5. 右键系统托盘图标→"系统代理"→"设置系统代理"
 
 连好后回我：已连接
 ```
 
 **Mac：**
 ```
-按这个来：
-
-1. 下载并打开V2rayU
-2. 回到管理面板复制节点链接
-3. 在V2rayU里从粘贴板导入
-4. 启动连接
+1. 打开刚才下载的V2rayU.dmg，拖到应用程序
+   如果被阻止：系统设置→隐私与安全性→仍要打开
+2. 菜单栏出现小图标
+3. 在浏览器打开管理面板，复制节点链接
+4. 点菜单栏图标→从粘贴板导入
+5. 点菜单栏图标→Turn v2ray-core On
 
 连好后回我：已连接
 ```
