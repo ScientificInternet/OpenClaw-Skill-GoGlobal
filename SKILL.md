@@ -1,7 +1,7 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 1.0.2
+version: 1.0.3
 description: "Cross-border business infrastructure setup. Guides users from VPS purchase to working proxy in under 10 minutes. Supports BandwagonHost KiwiVM API for zero-SSH automated deployment."
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy]

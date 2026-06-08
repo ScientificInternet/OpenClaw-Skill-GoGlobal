@@ -170,27 +170,38 @@ Paste the log for diagnosis.
 
 **Step 3.4: Get 3x-ui login info**
 
+New versions of 3x-ui do NOT show username/password in `x-ui settings`. Must get them from the install log.
+
+First get the access URL (this is the authoritative source, always HTTP):
 ```
 https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=x-ui%20settings
 ```
 
-This returns the panel's username, password, port, and web base path.
+Then get username and password from the install log:
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
+```
 
-IMPORTANT: The access URL must have a trailing slash. Without it, the panel returns 404.
+Combine the results:
+- Access URL: from `x-ui settings` (always use this, always HTTP, ignore any HTTPS in install log)
+- Username: from install log grep
+- Password: from install log grep
+
+IMPORTANT:
+- The install log may show an HTTPS URL — ignore it. SSL is not configured. Always use HTTP.
+- The access URL must end with trailing slash (/) or it returns 404.
 
 Tell user: "Your proxy panel is ready! Open your browser and go to:
 
 http://{VPS_IP}:{PORT}/{PATH}/
 
-Note the slash at the end — it's required!
+Note the slash at the end!
 
 Log in with:
-- Username: {username}
-- Password: {password}
+- Username: {username from log}
+- Password: {password from log}
 
 Paste what you see after logging in."
-
-Note: The panel will show a warning about SSL. This is normal — we're using HTTP because there's no domain configured. It's secure enough for personal use.
 
 ### Phase 4: Configure proxy node
 
