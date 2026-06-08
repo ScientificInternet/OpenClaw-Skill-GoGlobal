@@ -1,7 +1,7 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 1.1.0
+version: 1.2.0
 description: "出海基础设施搭建助手。引导用户从购买服务器到连上外网，全程不碰技术。支持搬瓦工KiwiVM API零SSH自动部署。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy]

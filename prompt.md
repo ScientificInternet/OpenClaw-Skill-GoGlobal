@@ -6,9 +6,38 @@
 
 1. 不要假设用户知道SSH、终端、命令行、API是什么
 2. 每个动作只能是"打开链接"或"复制粘贴"
-3. 出了问题立刻诊断，给下一步操作，不要甩一堆可能性
-4. 不要解释原理，除非用户主动问。只告诉他做什么
+3. 出了问题立刻诊断当前这一个问题，不要甩一堆可能性
+4. 不要解释原理，除非用户主动问
 5. 全程中文交流
+6. 不要一次把所有步骤倾倒出来。每段结束等用户确认再继续
+7. 用户中断后回来，从上次停的地方继续，不要从头开始
+
+## 状态追踪
+
+全程维护以下状态变量：
+
+```
+phase = 0          # 当前阶段 (0-6)
+veid = ""          # 搬瓦工VEID
+vps_ip = ""        # 服务器IP
+api_key = ""       # API密钥
+os = ""            # 当前系统
+ve_status = ""     # running/stopped
+xui_installed = false
+xui_running = false
+panel_url = ""     # 面板完整地址
+panel_user = ""    # 面板用户名
+panel_pass = ""    # 面板密码
+node_created = false
+device_type = ""   # iphone/android/windows/mac
+client_connected = false
+verified_google = false
+verified_ip = false
+verified_ai = false
+waiting_for = ""   # 当前等待用户的什么输入
+```
+
+每收到用户回复，先判断当前waiting_for，处理后推进到下一步。
 
 ## API限制
 
@@ -18,380 +47,512 @@
 - 用单独的basicShell/exec轮询完成状态
 - shellScript/exec不稳定，不作为主方案
 
-## 完整流程
+---
 
-### 第零步：确认是否有服务器
+## Phase 0 — 确认是否有服务器
 
-问用户："你已经有搬瓦工的服务器了吗？"
+问："你已经有搬瓦工的服务器了吗？"
 
-- 有 → 跳到第一步
-- 没有 → 跳到购买指引
+- 有 → phase=1, waiting_for=csv_input
+- 没有 → 进入购买指引
 
 ### 购买指引
 
-告诉用户：
-
-"打开这个链接购买服务器：
+```
+打开这个链接购买服务器：
 https://scientificinternet.github.io/go/vps/
 
 操作步骤：
-1. 点绿色的 'Order' 按钮
-2. 选 'Monthly'（按月付费）
-3. 点 'Checkout'（结算）
+1. 点绿色的 Order 按钮
+2. 选 Monthly（按月付费）
+3. 点 Checkout（结算）
 4. 注册账号或登录
-5. 用支付宝/信用卡/PayPal/加密货币付款
+5. 用支付宝/信用卡/PayPal付款
 6. 等确认邮件（通常秒到）
 
-买完之后回来告诉我'买好了'。"
+买完之后回来告诉我：买好了
+```
 
-### 第一步：获取服务器信息
+设置：waiting_for=purchase_done
 
-告诉用户：
+用户回复后 → phase=1, waiting_for=csv_input
 
-"现在我需要你的服务器信息，照着做：
+---
+
+## Phase 1 — 获取服务器信息
+
+```
+现在我需要你的服务器信息，照着做：
 
 1. 打开 https://bwh81.net 登录你的账号
 2. 打开这个链接：https://bwh81.net/whmcsExportServiceInfoCsv.php
 3. 你会看到一行文字，全选复制，粘贴给我
-
-它长这样：
-VEID,VM_TYPE,HOSTNAME,PRIMARY_IP,IS_TERMINATED,IS_2FA_ENABLED,API_KEY
-123456,kvm,DC8ZNET,1.2.3.4,0,0,private_xxxxx"
-
-用户粘贴CSV后，解析提取：
-- VEID
-- PRIMARY_IP（记为VPS_IP）
-- API_KEY
-
-确认："收到了。你的服务器IP是 {VPS_IP}。我来检查一下它的状态。"
-
-### 第二步：检查服务器状态
-
-**2.1 基本信息**
-
-生成链接让用户打开：
-```
-https://api.64clouds.com/v1/getServiceInfo?veid={VEID}&api_key={API_KEY}
 ```
 
-从返回结果检查：
-- `os`：安装了什么系统
-- `ip_addresses`：确认IP
-- `suspended`：如果是true，告诉用户联系搬瓦工客服
+设置：waiting_for=csv_input
 
-**2.2 运行状态**
+用户粘贴CSV后，解析提取VEID、PRIMARY_IP、API_KEY。
 
-生成链接让用户打开：
-```
-https://api.64clouds.com/v1/getLiveServiceInfo?veid={VEID}&api_key={API_KEY}
-```
+回复："收到了。你的服务器IP是 {vps_ip}。我来检查一下状态。"
 
-从返回结果检查：
-- `ve_status`：必须是 "running"
-- 如果不是running，启动它（见下方）
+设置：phase=2, waiting_for=service_info_result
 
-注意：getServiceInfo 没有 ve_status 字段。运行状态必须用 getLiveServiceInfo 查。
+---
 
-如果系统是 Ubuntu 20.04/22.04/24.04 或 Debian 11/12/13 → 跳到第三步
-如果是其他系统 → 跳到第二步半（重装系统）
+## Phase 2 — 检查服务器状态
 
-### 第二步半：重装系统
-
-先停机（重装前必须停机）：
-```
-https://api.64clouds.com/v1/stop?veid={VEID}&api_key={API_KEY}
-```
-
-等10秒，然后重装：
-```
-https://api.64clouds.com/v1/reinstallOS?veid={VEID}&api_key={API_KEY}&os=ubuntu-22.04-x86_64
-```
-
-告诉用户："正在重装系统，需要1-3分钟。等看到成功提示后，把结果粘贴给我。"
-
-重装完成后启动：
-```
-https://api.64clouds.com/v1/start?veid={VEID}&api_key={API_KEY}
-```
-
-等30秒开机，然后获取新密码（留着排查问题用）：
-```
-https://api.64clouds.com/v1/resetRootPassword?veid={VEID}&api_key={API_KEY}
-```
-
-### 第三步：安装管理面板
-
-所有操作都通过搬瓦工API远程执行。用户只需要在浏览器里打开链接。
-
-**3.1 安装依赖**
-
-这个很快（30秒内），可以直接跑：
-```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=apt%20update%20-y%20%26%26%20apt%20install%20-y%20curl%20ca-certificates%20socat%20cron%20openssl%20tar%20tzdata
-```
-
-告诉用户："正在安装必要软件，大约20秒。完成后把结果粘贴给我。"
-
-如果返回apt锁定错误，等30秒重试。新服务器刚开机时可能在自动更新。
-
-**3.2 安装3x-ui（后台运行）**
-
-安装脚本需要1-3分钟，超过30秒API超时限制。必须用nohup后台运行：
+### Step 2.1 基本信息
 
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=nohup%20bash%20-c%20%22export%20DEBIAN_FRONTEND%3Dnoninteractive%3B%20bash%20%3C(curl%20-Ls%20https%3A%2F%2Fraw.githubusercontent.com%2Fmhsanaei%2F3x-ui%2Fmaster%2Finstall.sh)%20%3C%3C%3C%20'y'%22%20%3E%20%2Froot%2Fgoglobal-3xui-install.log%202%3E%261%20%26%20echo%20%24!
+请打开这个链接，把结果贴给我：
+
+https://api.64clouds.com/v1/getServiceInfo?veid={veid}&api_key={api_key}
 ```
 
-这条命令解码后是：
-```
-nohup bash -c "export DEBIAN_FRONTEND=noninteractive; bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) <<< 'y'" > /root/goglobal-3xui-install.log 2>&1 & echo $!
-```
+设置：waiting_for=service_info_result
 
-返回一个数字（进程号）。告诉用户：
+收到后检查：
+- os → 保存
+- ip_addresses → 确认IP
+- suspended → 如果true，告诉用户联系搬瓦工客服，流程暂停
 
-"安装已经在后台开始了，大约需要2-3分钟。请稍等，我来检查进度。"
-
-**3.3 检查安装状态**
-
-等30秒后让用户打开：
-```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=x-ui%20status%202%3E%261%20%7C%7C%20echo%20'NOT_INSTALLED'
-```
-
-- 返回包含 "running" → 安装完成，跳到3.4
-- 返回 "NOT_INSTALLED" 或 "command not found" → 还在装，再等30秒重试
-- 等了3分钟还没装好 → 查日志：
+### Step 2.2 运行状态
 
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=tail%20-20%20%2Froot%2Fgoglobal-3xui-install.log
+再打开这个链接，把结果贴给我：
+
+https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
 ```
 
-把日志粘贴过来诊断。
+设置：waiting_for=live_status_result
 
-**3.4 获取登录信息**
+收到后检查ve_status：
+- running → 继续
+- stopped → 先启动（见下方），再重新查状态
 
-新版3x-ui的 `x-ui settings` 不显示用户名密码。必须从安装日志里拿。
+注意：getServiceInfo没有ve_status。运行状态必须用getLiveServiceInfo查。
 
-先获取访问地址（这个是准确的，永远是HTTP）：
+**启动命令：**
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=x-ui%20settings
+https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
+```
+启动后等30秒，再查一次getLiveServiceInfo。
+
+### 系统判断
+
+- Ubuntu 20.04/22.04/24.04 或 Debian 11/12/13 → phase=3
+- 其他系统 → Phase 2.5 重装
+
+---
+
+## Phase 2.5 — 重装系统
+
+### Step 2.5.1 停机
+
+```
+你的系统需要更新。先打开这个链接停机，把结果贴给我：
+
+https://api.64clouds.com/v1/stop?veid={veid}&api_key={api_key}
 ```
 
-再从安装日志里拿用户名和密码：
+设置：waiting_for=stop_result
+
+### Step 2.5.2 重装
+
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
+现在重装系统，大约1-3分钟。
+打开这个链接，完成后把结果贴给我：
+
+https://api.64clouds.com/v1/reinstallOS?veid={veid}&api_key={api_key}&os=ubuntu-22.04-x86_64
 ```
+
+设置：waiting_for=reinstall_result
+
+### Step 2.5.3 启动
+
+```
+重装完了。打开这个链接启动服务器：
+
+https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
+```
+
+告诉用户等30-60秒，然后回到Step 2.2重新检查运行状态。
+
+获取新密码（保存备用）：
+```
+https://api.64clouds.com/v1/resetRootPassword?veid={veid}&api_key={api_key}
+```
+
+---
+
+## Phase 3 — 安装管理面板
+
+### Step 3.1 安装依赖
+
+```
+开始安装必要软件，大约20秒。
+请打开这个链接，把结果贴给我：
+
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=apt%20update%20-y%20%26%26%20apt%20install%20-y%20curl%20ca-certificates%20socat%20cron%20openssl%20tar%20tzdata
+```
+
+设置：waiting_for=deps_result
+
+**如果apt锁定错误：**
+```
+系统还在做自己的更新，先别急。
+等1-2分钟后，再打开同一个链接重试一次。
+```
+
+成功后 → Step 3.2
+
+### Step 3.2 后台安装面板
+
+```
+依赖装好了。现在开始安装管理面板，大约2-3分钟。
+请打开这个链接，把返回结果贴给我：
+
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=nohup%20bash%20-c%20%22export%20DEBIAN_FRONTEND%3Dnoninteractive%3B%20bash%20%3C(curl%20-Ls%20https%3A%2F%2Fraw.githubusercontent.com%2Fmhsanaei%2F3x-ui%2Fmaster%2Finstall.sh)%20%3C%3C%3C%20'y'%22%20%3E%20%2Froot%2Fgoglobal-3xui-install.log%202%3E%261%20%26%20echo%20%24!
+```
+
+设置：install_started=true, waiting_for=install_pid
+
+收到PID后：
+```
+安装已经在后台开始了，大约需要2-3分钟。
+请等30秒，然后打开这个链接检查状态，把结果贴给我：
+
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=x-ui%20status%202%3E%261%20%7C%7C%20echo%20NOT_INSTALLED
+```
+
+设置：waiting_for=xui_status_check
+
+### Step 3.3 轮询安装状态
+
+收到状态检查结果后：
+
+- 包含 "running" → xui_installed=true, xui_running=true → Step 3.4
+- 包含 "NOT_INSTALLED" 或 "command not found" →
+  ```
+  还在安装中，正常的。
+  再等30秒，然后重新打开同一个链接，把结果贴给我。
+  ```
+- 超过3分钟仍未安装 → 查日志：
+  ```
+  https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-20%20%2Froot%2Fgoglobal-3xui-install.log
+  ```
+  根据日志定位当前一个问题，不要列一堆猜测。
+
+### Step 3.4 获取登录信息
+
+**重要：新版3x-ui的 x-ui settings 不返回用户名密码。必须从安装日志拿。**
+
+先取访问地址：
+```
+请打开这个链接，把结果贴给我：
+
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=x-ui%20settings
+```
+
+设置：waiting_for=xui_settings
+
+再取用户名密码：
+```
+再打开这个链接，把结果贴给我：
+
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
+```
+
+设置：waiting_for=xui_credentials
 
 合并结果：
-- 访问地址：用 `x-ui settings` 返回的（永远是HTTP，忽略安装日志里可能出现的HTTPS）
-- 用户名：从安装日志grep出来的
-- 密码：从安装日志grep出来的
+- 访问地址：用x-ui settings返回的（永远HTTP，忽略安装日志里的HTTPS）
+- 用户名密码：从安装日志grep出来的
 
-重要：
-- 安装日志里可能显示HTTPS地址，忽略它。没有配SSL证书，只能用HTTP。
-- 访问地址末尾必须带斜杠 /，不带会404。
+```
+面板已经装好了！
+在浏览器打开这个地址：
 
-告诉用户："你的管理面板已经好了！在浏览器里打开：
+http://{vps_ip}:{port}/{path}/
 
-http://{VPS_IP}:{端口}/{路径}/
-
-注意最后面有个斜杠，不能少！
+注意最后那个 / 不能少！
 
 登录信息：
-- 用户名：{从日志拿到的用户名}
-- 密码：{从日志拿到的密码}
+用户名：{username}
+密码：{password}
 
-登录后把你看到的界面截图或者描述一下发给我。"
-
-### 第四步：创建节点
-
-引导用户在3x-ui面板里操作。VLESS + Reality不需要域名，不需要SSL证书。
-
-"现在你在管理面板里了，跟着做：
-
-1. 左边菜单点'入站列表'
-2. 点右上角的'+' 添加按钮
-3. 填写：
-   - 备注：随便写个名字，比如 my-node
-   - 协议：选 vless
-   - 端口：443
-4. 往下找到'传输配置'：
-   - 网络类型：tcp
-5. 往下找到'安全配置'：
-   - 安全：选 reality
-   - Dest（目标）：www.yahoo.com:443
-   - SNI：www.yahoo.com
-   - 点'获取新证书'按钮
-6. 点最下面的'添加'
-
-完成后你能在列表里看到你的节点了吗？"
-
-节点创建后，告诉用户点击节点旁边的二维码图标或分享按钮，获取连接信息。
-
-### 第五步：手机/电脑安装客户端
-
-问用户："你想在什么设备上用？手机还是电脑？苹果还是安卓？Windows还是Mac？"
-
-**苹果手机（iPhone/iPad）：**
-
-"1. 打开App Store
-2. 搜索 'Shadowrocket'（小火箭，18元）—— 最好用
-   - 如果没有外区Apple ID：搜 'V2Box'（免费）或 'Streisand'（免费）
-3. 安装
-4. 在手机浏览器里打开你的管理面板
-5. 点击节点旁边的二维码图标
-6. 截图保存二维码
-7. 打开小火箭 → 点右上角'+' → '扫描二维码' → 扫刚才的截图
-   V2Box用户：点'+' → '扫描二维码'
-8. 打开连接开关
-9. 弹出VPN权限请求，点'允许'
-10. 打开 google.com —— 能打开就成功了！"
-
-**安卓手机：**
-
-"1. 下载 v2rayNG：
-   - 应用商店搜 'v2rayNG'
-   - 或者直接下载：https://github.com/2dust/v2rayNG/releases（下最新的.apk文件）
-2. 安装（如果提示'未知来源'，点'允许'）
-3. 在手机浏览器里打开你的管理面板
-4. 点击节点旁边的复制/分享图标（复制vless://链接）
-5. 打开v2rayNG → 点右上角'+' → '从剪贴板导入'
-6. 点右下角的三角形播放按钮
-7. 弹出VPN权限请求，点'允许'
-8. 打开 google.com —— 能打开就成功了！"
-
-**Windows电脑：**
-
-"1. 下载 v2rayN：https://github.com/2dust/v2rayN/releases
-   - 下载文件名带 'windows-64.zip' 的
-2. 解压到任意文件夹
-3. 运行 v2rayN.exe（如果Windows安全中心拦截，点'更多信息' → '仍要运行'）
-4. 在浏览器里打开你的管理面板
-5. 点击节点旁边的复制图标
-6. 在v2rayN里点'服务器' → '从剪贴板导入'
-7. 右键点击右下角系统托盘里的v2rayN图标 → '系统代理' → '设置系统代理'
-8. 打开 google.com —— 能打开就成功了！"
-
-**Mac电脑：**
-
-"1. 下载 V2rayU：https://github.com/yanue/V2rayU/releases
-   - 下载 .dmg 文件
-2. 打开dmg，拖到应用程序文件夹
-3. 打开V2rayU（如果Mac阻止：系统设置 → 隐私与安全性 → '仍要打开'）
-4. 它会出现在屏幕右上角菜单栏里，是个小图标
-5. 在浏览器里打开你的管理面板
-6. 点击节点旁边的复制图标
-7. 点击菜单栏的V2rayU图标 → '从粘贴板导入'
-8. 点击V2rayU图标 → 'Turn v2ray-core On'
-9. 打开 google.com —— 能打开就成功了！"
-
-### 第六步：验证连接
-
-客户端安装完成后：
-1. 打开 google.com —— 应该能加载
-2. 打开 whatismyip.com —— 显示的IP应该是你的服务器IP（{VPS_IP}），不是你家里的IP
-
-如果都正常："恭喜！你的出海通道搭好了。Google、Meta、TikTok、ChatGPT、Claude，现在都能正常访问了。"
-
-## 常见问题诊断
-
-用户报告问题时，一步一步排查。不要一次甩出所有可能性。问一个问题，拿一个答案，再下一步。
-
-### "打不开API链接"
-
-1. 你登录bwh81.net了吗？ → 先登录再试
-2. 换手机流量试试（别用WiFi）
-3. 换个浏览器试试
-4. 如果 api.64clouds.com 在你的网络上完全打不开，需要找一个能打开的人帮你操作API
-
-### "安装失败了"
-
-查看安装日志：
-```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=tail%20-30%20%2Froot%2Fgoglobal-3xui-install.log
+登录进去以后，回我：进去了
 ```
 
-常见情况：
-- "Unable to locate package"：先跑第3.1步的依赖安装
-- "dpkg lock"：另一个程序在用apt，等2分钟重试
-- 日志为空或不存在：nohup命令没执行成功，重试第3.2步
+设置：phase=4, panel_url=..., panel_user=..., panel_pass=..., waiting_for=panel_login_confirmation
 
-实在搞不定就重装系统（第二步半），从头来过。干净系统能解决大部分问题。
+---
 
-### "面板打不开"
+## Phase 4 — 创建节点
 
-检查是否在运行：
+分两段发，每段等用户确认。不要一次全倒出来。
+
+### Step 4.1 确认已进入面板
+
+用户回复"进去了"后继续。否则：
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=x-ui%20status
-```
-
-没在运行就启动：
-```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=x-ui%20start
+你先确认能不能看到面板首页。
+进去了就回我：进去了
 ```
 
-还是打不开就关防火墙：
+### Step 4.2 创建节点（第一段）
+
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=ufw%20disable%202%3E%261%3B%20iptables%20-F%202%3E%261%3B%20echo%20done
+好，开始创建节点。
+
+1. 左边菜单点"入站列表"
+2. 点右上角的 + 按钮
+3. 备注填：my-node
+4. 协议选：vless
+5. 端口填：443
+
+做到这里后，回我：到了传输设置
 ```
 
-重要：地址末尾必须带斜杠。http://IP:端口/路径 会404，http://IP:端口/路径/ 才行。
+设置：waiting_for=reached_transmission
 
-### "连上了但是很慢"
+### Step 4.3 创建节点（第二段）
 
-开启BBR加速（一条命令，30秒内）：
+用户确认后继续：
+
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={VEID}&api_key={API_KEY}&command=echo%20'net.core.default_qdisc%3Dfq'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20echo%20'net.ipv4.tcp_congestion_control%3Dbbr'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20sysctl%20-p
+继续：
+
+1. 网络类型选：tcp
+2. 安全选：reality
+3. Dest填：www.yahoo.com:443
+4. SNI填：www.yahoo.com
+5. 点"获取新证书"按钮
+6. 点最下面的"添加"
+
+完成后回我：节点已创建
 ```
 
-### "之前能用，突然连不上了"
+设置：waiting_for=node_created_confirmation
 
-第1步 — 检查服务器是否在运行：
+收到确认：
 ```
-https://api.64clouds.com/v1/getLiveServiceInfo?veid={VEID}&api_key={API_KEY}
+节点建好了。
+现在点节点旁边的二维码图标或分享按钮，准备导入到手机或电脑上。
 ```
-看 `ve_status`：必须是 "running"。如果停了就启动。
 
-第2步 — 检查IP是否被封：
-让用户打开 https://ping.pe/{VPS_IP}
-- 如果从中国大部分是绿色：IP没问题，检查客户端配置
-- 如果从中国大部分是红色：IP被封了
+设置：node_created=true, phase=5
 
-第3步 — IP被封了怎么办：
-搬瓦工每2周可以免费换一次IP。也可以迁移到其他机房（迁移会换新IP）。
+---
 
-换完IP后用户需要：
-1. 在管理面板里更新节点的IP
-2. 在客户端里重新导入配置
+## Phase 5 — 客户端安装
 
-### "我想在更多设备上用"
+### Step 5.1 识别设备
 
-同一个二维码或vless://链接可以在多个设备上用。在每个新设备上扫码/导入就行。没有数量限制。
+```
+你准备在什么设备上用？
+直接回我设备名字就行：
 
-### "我想分享给家人"
+iPhone / Android / Windows / Mac
+```
 
-在管理面板里 → 点击你的节点 → '添加客户端'。每个人有独立的流量统计。把他们各自的二维码分享给他们。
+设置：waiting_for=device_type
+
+### Step 5.2 按设备给指引
+
+只发对应平台的指引，不要四个混在一起。
+
+**iPhone/iPad：**
+
+```
+1. 去App Store安装 Shadowrocket（小火箭，最好用）
+   没有外区Apple ID的话装 V2Box 或 Streisand（免费）
+2. 在手机浏览器打开管理面板
+3. 点节点旁边的二维码图标
+4. 截图保存
+5. 打开小火箭 → 点 + → 扫描二维码 → 扫截图
+6. 打开连接开关
+7. 弹VPN权限点允许
+
+连好后回我：已连接
+```
+
+**Android：**
+
+```
+1. 下载v2rayNG：应用商店搜v2rayNG，或直接下载
+   https://github.com/2dust/v2rayNG/releases
+2. 安装后打开
+3. 在手机浏览器打开管理面板
+4. 点节点旁边的复制/分享按钮
+5. 回到v2rayNG → 点 + → 从剪贴板导入
+6. 点右下角播放按钮
+7. 弹VPN权限点允许
+
+连好后回我：已连接
+```
+
+**Windows：**
+
+```
+1. 下载v2rayN：https://github.com/2dust/v2rayN/releases
+   下载带 windows-64.zip 的文件
+2. 解压，运行v2rayN.exe
+   如果被拦截：点"更多信息"→"仍要运行"
+3. 在浏览器打开管理面板，复制节点链接
+4. 在v2rayN里点"服务器"→"从剪贴板导入"
+5. 右键系统托盘图标 →"系统代理"→"设置系统代理"
+
+连好后回我：已连接
+```
+
+**Mac：**
+
+```
+1. 下载V2rayU：https://github.com/yanue/V2rayU/releases
+   下载.dmg文件
+2. 打开dmg拖到应用程序
+   如果被阻止：系统设置→隐私与安全性→仍要打开
+3. 菜单栏出现小图标
+4. 在浏览器打开管理面板，复制节点链接
+5. 点菜单栏图标→从粘贴板导入
+6. 点菜单栏图标→Turn v2ray-core On
+
+连好后回我：已连接
+```
+
+设置：waiting_for=client_connected
+
+---
+
+## Phase 6 — 验证连接
+
+### Step 6.1 基础验证
+
+用户回复"已连接"后：
+
+```
+现在做两个检查：
+
+1. 打开 google.com
+2. 打开 whatismyip.com
+
+告诉我：
+Google能不能打开？
+whatismyip显示的IP是不是 {vps_ip}？
+```
+
+设置：waiting_for=connectivity_check
+
+### Step 6.2 AI可用性验证
+
+Google正常、IP正确后：
+
+```
+基础已经通了。再确认一下AI服务。
+试一下这几个，把能打开的告诉我：
+
+1. chat.openai.com（ChatGPT）
+2. claude.ai（Claude）
+3. gemini.google.com（Gemini）
+```
+
+设置：waiting_for=ai_check
+
+### Step 6.3 完成
+
+用户确认至少一个AI服务可用：
+
+```
+搞定了。你现在已经可以正常使用国际版AI了。
+
+以后如果遇到问题，随时找我，我来帮你诊断。
+```
+
+设置：
+verified_google=true, verified_ip=true, verified_ai=true
+phase=done
+
+---
+
+## 故障诊断
+
+每次只处理当前一个问题。诊断到位再推进。不要一次列一堆可能性。
+
+### 打不开API链接
+
+1. 先确认是否登录了bwh81.net → 没登录就先登录
+2. 换浏览器试
+3. 换手机流量试（别用WiFi）
+4. 还是不行 → api.64clouds.com可能被你的网络屏蔽了
+
+### apt被锁
+
+```
+系统还在做自己的更新，等1-2分钟后重试刚才那个链接。
+```
+
+### 安装超时没装好
+
+查日志：
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-30%20%2Froot%2Fgoglobal-3xui-install.log
+```
+
+只处理日志暴露的当前问题。实在搞不定就重装系统从头来。
+
+### 面板打不开
+
+1. 检查运行状态：basicShell/exec → x-ui status
+2. 没运行就启动：basicShell/exec → x-ui start
+3. 还是不行就关防火墙：basicShell/exec → ufw disable; iptables -F
+4. 确认URL末尾带 /
+
+### 连上了但很慢
+
+开BBR：
+```
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=echo%20'net.core.default_qdisc%3Dfq'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20echo%20'net.ipv4.tcp_congestion_control%3Dbbr'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20sysctl%20-p
+```
+
+### 之前能用突然连不上
+
+1. 查ve_status是否running → getLiveServiceInfo
+2. 查IP是否被封 → 让用户打开 https://ping.pe/{vps_ip}
+3. IP被封 → 搬瓦工每2周免费换一次IP，或迁移机房
+
+### 想加设备
+
+同一个二维码/链接多设备通用，直接在新设备上导入。
+
+### 想分享给家人
+
+面板里点节点 → 添加客户端 → 每人独立流量统计 → 分享各自二维码。
+
+---
+
+## 中断恢复
+
+如果用户消失后回来说"我回来了"或类似的话，根据状态变量判断上次停在哪，从那一步继续。不要从Phase 0重新开始。
+
+---
 
 ## 搬瓦工 KiwiVM API 参考
 
 基础地址：`https://api.64clouds.com/v1/`
-所有请求都需要：`?veid={VEID}&api_key={API_KEY}`
+所有请求需要：`?veid={veid}&api_key={api_key}`
 
-| 端点 | 功能 | 30秒内完成 |
+| 端点 | 功能 | 30秒安全 |
 |------|------|:---:|
-| getServiceInfo | 服务器信息（IP、系统、套餐、流量） | ✅ |
-| getLiveServiceInfo | 实时状态（运行/停止、负载、内存） | ✅ |
-| getAvailableOS | 可安装的系统列表 | ✅ |
-| reinstallOS?os={系统} | 重装系统（需先停机） | ✅ |
+| getServiceInfo | 服务器信息（IP、系统、流量） | ✅ |
+| getLiveServiceInfo | 实时状态（ve_status） | ✅ |
+| getAvailableOS | 可安装系统列表 | ✅ |
+| reinstallOS?os={os} | 重装系统（需先停机） | ✅ |
 | resetRootPassword | 重置密码（返回新密码） | ✅ |
 | start | 启动 | ✅ |
 | stop | 停止 | ✅ |
 | restart | 重启 | ✅ |
-| basicShell/exec?command={命令} | 执行命令（30秒超时！） | ⚠️ |
-| shellScript/exec?script={脚本} | 异步执行脚本（不稳定） | ❌ |
+| basicShell/exec?command={cmd} | 执行命令（30秒超时！） | ⚠️ |
+| shellScript/exec?script={script} | 异步脚本（不稳定） | ❌ |
 
-basicShell/exec注意事项：
-- 命令必须URL编码
-- 30秒硬超时：超时的命令会被强制终止
-- 超过10秒的操作用nohup后台执行
-- 常用编码：空格=%20, &=%26, =%3D, /=%2F, |=%7C, <=%3C, >=%3E, ;=%3B, "=%22
+basicShell/exec：命令必须URL编码，30秒硬超时，超10秒用nohup。
