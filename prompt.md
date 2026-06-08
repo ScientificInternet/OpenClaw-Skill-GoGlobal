@@ -498,7 +498,7 @@ Skill不允许：
 好，你用的是iPhone。
 
 请打开这个页面，按iPhone区域安装客户端：
-https://bwh8l.net/clients
+https://help.bwh8l.net
 
 有外区Apple ID：优先装Shadowrocket
 没有外区Apple ID：按页面里的免费方案装V2Box或Streisand
@@ -511,7 +511,7 @@ https://bwh8l.net/clients
 好，你用的是Android。
 
 请打开这个页面，按Android区域安装客户端：
-https://bwh8l.net/clients
+https://help.bwh8l.net
 
 安装v2rayNG。
 装好后回我：装好了
@@ -522,7 +522,7 @@ https://bwh8l.net/clients
 好，你用的是Windows。
 
 请打开这个页面，按Windows区域安装客户端：
-https://bwh8l.net/clients
+https://help.bwh8l.net
 
 下载并安装v2rayN。
 装好后回我：装好了
@@ -533,7 +533,7 @@ https://bwh8l.net/clients
 好，你用的是Mac。
 
 请打开这个页面，按Mac区域安装客户端：
-https://bwh8l.net/clients
+https://help.bwh8l.net
 
 下载并安装V2rayU。
 装好后回我：装好了
@@ -620,7 +620,7 @@ https://bwh8l.net/clients
 先别继续导入。
 
 你先换一个浏览器重新打开这个页面试一次：
-https://bwh8l.net/clients
+https://help.bwh8l.net
 
 如果还是打不开，回我：下载页还是打不开
 ```
