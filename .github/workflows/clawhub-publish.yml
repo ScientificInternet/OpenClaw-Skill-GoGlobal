@@ -10,9 +10,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Install ClawHub CLI
         run: npm install -g clawhub@latest
+
       - name: Login
         run: clawhub login --token "${{ secrets.CLAWHUB_TOKEN }}"
+
       - name: Publish skill
-        run: clawhub skill publish . || echo "Publish failed or version unchanged"
+        run: |
+          VERSION=$(grep '^version:' SKILL.md | head -1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+          NAME=$(grep '^name:' SKILL.md | head -1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+          if [ -z "$VERSION" ] || [ -z "$NAME" ]; then
+            echo ">>> Could not extract name/version from SKILL.md"
+            exit 1
+          fi
+
+          echo ">>> Publishing $NAME@$VERSION"
+          clawhub publish . \
+            --slug "$NAME" \
+            --name "$NAME" \
+            --version "$VERSION" \
+            --changelog "Auto-published from GitHub commit ${{ github.sha }}" \
+            || echo ">>> Failed to publish (version may already exist)"
