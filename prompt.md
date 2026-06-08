@@ -728,6 +728,16 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 
 设置：waiting_for=node_created_confirmation, resume_hint=等用户确认节点已创建
 
+收到"节点已创建"后：
+- node_created=true
+- phase=5
+
+输出：
+```
+节点建好了。
+现在点节点旁边的分享按钮或二维码图标，准备导入到你的设备上。
+```
+
 ### Phase 4 故障处理
 
 **Reality页面和我说的不一样 / 没有"获取新证书"按钮：**
@@ -751,12 +761,43 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 设置：waiting_for=reality_fields, resume_hint=等用户贴Reality字段名
 
 收到reality_fields后：
-- 如果有Private Key / Public Key但没有自动生成按钮：让用户点旁边的生成按钮；没有就回"没有生成按钮"
+- 如果看到Private Key / Public Key旁边有生成按钮：先点生成
+- 如果没有生成按钮，但页面里已经自动出现了Private Key / Public Key的值：继续下一步，不要卡住
+- 如果既没有生成按钮，也没有任何Private Key / Public Key的值：回我"没有生成按钮"
+
 - 如果有Short IDs：填6-8位随机小写字母数字，例如a7f3d9
 - 如果有SpiderX：填 /
 - Dest仍填www.yahoo.com:443
 - SNI仍填www.yahoo.com
-- 填完后回我：节点已创建
+
+填完后点添加。
+完成后回我：节点已创建
+
+设置：waiting_for=node_created_confirmation, resume_hint=等用户确认节点已创建
+
+如果用户回"没有生成按钮"：
+```
+先不要点添加。
+
+请看一下当前页面里：
+- Private Key
+- Public Key
+
+这两个位置现在是不是空的。
+
+如果已经有值了，就继续填写：
+- Short IDs：a7f3d9
+- SpiderX：/
+- Dest：www.yahoo.com:443
+- SNI：www.yahoo.com
+
+然后点添加。
+完成后回我：节点已创建
+
+如果这两个位置还是空的，就把当前Reality区域里所有字段名字再贴给我一次。
+```
+
+设置：waiting_for=reality_fields, resume_hint=等用户继续反馈Reality字段状态
 
 收到后：node_created=true, phase=5
 
@@ -947,10 +988,14 @@ Skill不允许：
 收到"还打不开"后：
 ```
 先不要继续这台设备上的安装。
-把你的设备类型再回我一次：iPhone / Android / Windows / Mac
-我改走这台设备对应的最短应急安装路径。
+当前下载页打不开，我这里没有备用地址可以给你。
+
+请换一个网络，或者换一台设备重新打开：
+{clients_page_url}
+
+打开后回我：打开了
 ```
-设置：waiting_for=device_type, resume_hint=等用户重新确认设备类型
+设置：waiting_for=clients_page_retry_result, resume_hint=等用户换网络后重试下载页
 
 **二维码扫不了：**
 ```
