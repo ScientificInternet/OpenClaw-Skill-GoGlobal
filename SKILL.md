@@ -1,35 +1,34 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 1.0.3
-description: "Cross-border business infrastructure setup. Guides users from VPS purchase to working proxy in under 10 minutes. Supports BandwagonHost KiwiVM API for zero-SSH automated deployment."
+version: 1.1.0
+description: "出海基础设施搭建助手。引导用户从购买服务器到连上外网，全程不碰技术。支持搬瓦工KiwiVM API零SSH自动部署。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy]
 ---
 
-# GoGlobal — Cross-Border Infrastructure Setup
+# GoGlobal — 出海基础设施一键搭建
 
-Zero-technical-knowledge guide for setting up cross-border business infrastructure.
+零基础用户从买服务器到连上外网的完整引导。
 
-## What it does
+## 能做什么
 
-Walks users through the complete setup:
-1. Purchase a VPS (BandwagonHost recommended)
-2. Automated deployment via KiwiVM API (user never touches SSH)
-3. 3x-ui proxy panel installation and configuration
-4. Client app setup on phone and computer (iOS/Android/Windows/Mac)
-5. Built-in troubleshooting for common issues
+1. 引导购买服务器（推荐搬瓦工）
+2. 通过KiwiVM API自动部署（用户不碰SSH）
+3. 安装3x-ui管理面板并配置节点
+4. 引导手机/电脑安装客户端（iOS/Android/Windows/Mac）
+5. 内置常见问题诊断
 
-## Target user
+## 面向谁
 
-Complete beginners who need cross-border access for business (Google Ads, Meta, TikTok, ChatGPT, Claude). No technical knowledge required.
+完全不懂技术的新手。需要访问Google、Meta、TikTok、ChatGPT、Claude做跨境生意的人。
 
-## How it works
+## 怎么用
 
-User pastes a one-line CSV from BandwagonHost → agent calls KiwiVM API through user's browser → 3x-ui installed and configured automatically → user scans QR code on phone → done.
+用户粘贴搬瓦工的一行CSV → agent通过API自动部署 → 用户在面板里点几下创建节点 → 手机扫码连上 → 完事。
 
-## Requirements
+## 需要什么
 
-- A BandwagonHost VPS ($20/month ECOMMERCE SLA recommended)
-- A web browser
-- A phone or computer for the client app
+- 搬瓦工服务器（推荐$20/月 ECOMMERCE SLA）
+- 浏览器
+- 手机或电脑装客户端
