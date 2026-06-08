@@ -67,7 +67,12 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 6. 用户贴回的API返回结果里如果包含敏感字段，回复时只摘取必要状态，不完整复述
 
 输出给用户的API链接必须包含真实api_key。用户是纯小白，不能让他自己替换***。
-但在状态总结、错误解释、复述服务器信息时，永远写成 api_key=已隐藏。
+但在状态总结、错误解释、复述服务器信息时，永远写成 api_key=***。
+
+补充说明：
+- 文档示例、测试稿、状态总结里，一律写 api_key=***
+- 只有在实际运行时，真正发给用户点击打开的那一条完整控制链接，才注入真实 api_key
+- 不要让用户自己手动把 *** 替换成真实 key
 
 ### API限制
 
@@ -342,7 +347,7 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 下一步我先检查机器基础信息。
 
 请打开这个链接，把返回内容完整贴给我：
-https://api.64clouds.com/v1/getServiceInfo?veid={veid}&api_key={api_key}
+https://api.64clouds.com/v1/getServiceInfo?veid={veid}&api_key=***
 ```
 
 设置：phase=2, waiting_for=service_info_result, resume_hint=等用户贴getServiceInfo返回结果
@@ -365,7 +370,7 @@ https://api.64clouds.com/v1/getServiceInfo?veid={veid}&api_key={api_key}
 现在再检查它是不是正在运行。
 
 请打开这个链接，把结果完整贴给我：
-https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
+https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key=***
 ```
 
 设置：waiting_for=live_status_result, resume_hint=等用户贴getLiveServiceInfo返回结果
@@ -379,7 +384,7 @@ https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
 这台服务器现在没有在运行。
 
 请先打开这个链接启动它，把结果贴给我：
-https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
+https://api.64clouds.com/v1/start?veid={veid}&api_key=***
 ```
 
 设置：waiting_for=start_result, resume_hint=等用户启动VPS后贴返回结果
@@ -390,7 +395,7 @@ https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
 
 现在再检查一次运行状态。
 请打开这个链接，把结果完整贴给我：
-https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
+https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key=***
 ```
 
 设置：waiting_for=live_status_result, resume_hint=等用户再次贴getLiveServiceInfo返回结果
@@ -406,7 +411,7 @@ https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
 下一步我来装运行环境。
 
 请打开这个链接，把结果完整贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=nohup%20bash%20-c%20%22export%20DEBIAN_FRONTEND%3Dnoninteractive%3B%20apt%20update%20-y%20%26%26%20apt%20install%20-y%20curl%20ca-certificates%20socat%20cron%20openssl%20tar%20tzdata%22%20%3E%20%2Froot%2Fgoglobal-deps.log%202%3E%261%20%26%20echo%20%24!
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=nohup%20bash%20-c%20%22export%20DEBIAN_FRONTEND%3Dnoninteractive%3B%20apt%20update%20-y%20%26%26%20apt%20install%20-y%20curl%20ca-certificates%20socat%20cron%20openssl%20tar%20tzdata%22%20%3E%20%2Froot%2Fgoglobal-deps.log%202%3E%261%20%26%20echo%20%24!
 ```
 
 设置：phase=3, waiting_for=deps_pid, resume_hint=等用户贴依赖后台安装PID
@@ -440,7 +445,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 好，现在先停机。
 
 请打开这个链接停机，把结果贴给我：
-https://api.64clouds.com/v1/stop?veid={veid}&api_key={api_key}
+https://api.64clouds.com/v1/stop?veid={veid}&api_key=***
 ```
 
 设置：waiting_for=stop_result, resume_hint=等用户贴stop返回结果
@@ -451,7 +456,7 @@ https://api.64clouds.com/v1/stop?veid={veid}&api_key={api_key}
 现在开始重装系统，大约1-3分钟。
 
 请打开这个链接，完成后把结果贴给我：
-https://api.64clouds.com/v1/reinstallOS?veid={veid}&api_key={api_key}&os=ubuntu-22.04-x86_64
+https://api.64clouds.com/v1/reinstallOS?veid={veid}&api_key=***&os=ubuntu-22.04-x86_64
 ```
 
 设置：waiting_for=reinstall_result, resume_hint=等用户贴重装结果
@@ -462,7 +467,7 @@ https://api.64clouds.com/v1/reinstallOS?veid={veid}&api_key={api_key}&os=ubuntu-
 重装好了。
 
 请打开这个链接启动服务器，把结果贴给我：
-https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
+https://api.64clouds.com/v1/start?veid={veid}&api_key=***
 ```
 
 设置：waiting_for=start_result_after_reinstall, resume_hint=等用户贴重装后启动结果
@@ -472,7 +477,7 @@ https://api.64clouds.com/v1/start?veid={veid}&api_key={api_key}
 好，给它30-60秒启动时间。
 
 然后再打开这个链接，把结果完整贴给我：
-https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
+https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key=***
 ```
 
 设置：waiting_for=live_status_result, resume_hint=等用户贴重装后getLiveServiceInfo返回结果
@@ -488,7 +493,7 @@ https://api.64clouds.com/v1/getLiveServiceInfo?veid={veid}&api_key={api_key}
 依赖安装已经开始了。
 
 请等30秒，然后打开这个链接检查结果，把返回内容贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-20%20%2Froot%2Fgoglobal-deps.log%3B%20command%20-v%20curl%3B%20command%20-v%20openssl
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=tail%20-20%20%2Froot%2Fgoglobal-deps.log%3B%20command%20-v%20curl%3B%20command%20-v%20openssl
 ```
 设置：waiting_for=deps_check_result, resume_hint=等用户贴依赖安装检查结果
 
@@ -497,7 +502,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 依赖安装返回不完整。
 
 请打开这个链接查看日志，把结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-30%20%2Froot%2Fgoglobal-deps.log
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=tail%20-30%20%2Froot%2Fgoglobal-deps.log
 ```
 设置：waiting_for=deps_check_result
 
@@ -521,7 +526,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 现在开始后台安装管理面板，大约2-3分钟。
 
 请打开这个链接，把返回结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=nohup%20bash%20-c%20%22export%20DEBIAN_FRONTEND%3Dnoninteractive%3B%20bash%20%3C(curl%20-Ls%20https%3A%2F%2Fraw.githubusercontent.com%2Fmhsanaei%2F3x-ui%2Fmaster%2Finstall.sh)%20%3C%3C%3C%20'y'%22%20%3E%20%2Froot%2Fgoglobal-3xui-install.log%202%3E%261%20%26%20echo%20%24!
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=nohup%20bash%20-c%20%22export%20DEBIAN_FRONTEND%3Dnoninteractive%3B%20bash%20%3C(curl%20-Ls%20https%3A%2F%2Fraw.githubusercontent.com%2Fmhsanaei%2F3x-ui%2Fmaster%2Finstall.sh)%20%3C%3C%3C%20'y'%22%20%3E%20%2Froot%2Fgoglobal-3xui-install.log%202%3E%261%20%26%20echo%20%24!
 ```
 
 设置：install_started=true, waiting_for=install_pid, resume_hint=等用户贴后台安装命令返回值
@@ -538,7 +543,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 如果明确是timeout/killed/empty/not found：
 先查日志：
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-30%20%2Froot%2Fgoglobal-3xui-install.log
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=tail%20-30%20%2Froot%2Fgoglobal-3xui-install.log
 ```
 设置：waiting_for=xui_install_log, resume_hint=等用户贴安装日志
 
@@ -554,7 +559,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 安装已经在后台开始了。
 
 请等30秒左右，然后打开这个链接检查状态，把结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=x-ui%20status%202%3E%261%20%7C%7C%20echo%20NOT_INSTALLED
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=x-ui%20status%202%3E%261%20%7C%7C%20echo%20NOT_INSTALLED
 ```
 
 设置：waiting_for=xui_status_check, resume_hint=等用户贴x-ui status检查结果
@@ -576,7 +581,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 安装时间有点久，我先看一下安装日志。
 
 请打开这个链接，把结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-20%20%2Froot%2Fgoglobal-3xui-install.log
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=tail%20-20%20%2Froot%2Fgoglobal-3xui-install.log
 ```
 
 设置：waiting_for=xui_install_log, resume_hint=等用户贴安装日志tail
@@ -592,7 +597,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 现在取面板访问地址。
 
 请打开这个链接，把结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=x-ui%20settings
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=x-ui%20settings
 ```
 
 设置：need_xui_settings=true, need_xui_credentials=true, waiting_for=xui_access_info_part1, resume_hint=等用户贴x-ui settings结果
@@ -611,7 +616,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ```
 我还没拿到完整面板地址。
 请打开这个链接，把结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=x-ui%202%3E%261
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=x-ui%202%3E%261
 ```
 设置：waiting_for=xui_menu_output
 
@@ -633,7 +638,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 再取登录信息。
 
 请打开这个链接，把结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
 ```
 
 设置：need_xui_settings=false, waiting_for=xui_access_info_part2, resume_hint=等用户贴用户名密码日志
@@ -644,7 +649,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ```
 登录信息没有取到。
 请打开这个链接重置面板用户名密码，把结果贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=x-ui%20resetuser
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=x-ui%20resetuser
 ```
 设置：waiting_for=xui_resetuser_result
 
@@ -658,7 +663,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ```
 用户名密码已经重置。
 请再打开这个链接，把新的登录信息贴给我：
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=grep%20-E%20'Username%3A%7CPassword%3A'%20%2Froot%2Fgoglobal-3xui-install.log
 ```
 设置：waiting_for=xui_access_info_part2, resume_hint=等用户贴用户名密码日志
 
@@ -1188,7 +1193,7 @@ iPhone/iPad：
 5. 如果panel_port或panel_path为空，重新执行x-ui settings
 6. 还不行就放行面板端口：
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=ufw%20allow%20{panel_port}%2Ftcp%20%26%26%20ufw%20allow%20443%2Ftcp%20%26%26%20ufw%20reload%20%26%26%20echo%20done
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=ufw%20allow%20{panel_port}%2Ftcp%20%26%26%20ufw%20allow%20443%2Ftcp%20%26%26%20ufw%20reload%20%26%26%20echo%20done
 ```
 
 ### 安装超时
@@ -1197,7 +1202,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ### 连上了但很慢
 开BBR：
 ```
-https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=echo%20'net.core.default_qdisc%3Dfq'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20echo%20'net.ipv4.tcp_congestion_control%3Dbbr'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20sysctl%20-p
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key=***&command=echo%20'net.core.default_qdisc%3Dfq'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20echo%20'net.ipv4.tcp_congestion_control%3Dbbr'%20%3E%3E%20%2Fetc%2Fsysctl.conf%20%26%26%20sysctl%20-p
 ```
 
 ### 突然连不上
@@ -1211,7 +1216,7 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ## 搬瓦工 KiwiVM API 参考
 
 基础地址：`https://api.64clouds.com/v1/`
-所有请求需要：`?veid={veid}&api_key={api_key}`
+所有请求需要：`?veid={veid}&api_key=***`
 
 | 端点 | 功能 | 30秒安全 |
 |------|------|:---:|

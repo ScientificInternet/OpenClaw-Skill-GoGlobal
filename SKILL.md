@@ -1,7 +1,7 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 3.2.2
+version: 3.2.3
 description: "出海通 — 国际版AI可用性陪跑。CN2 GIA三网优化，延迟低速度快，独享IP干净不被封。零基础10分钟搭好，AI全程陪跑自动部署，客户端直接发到你手机，扫码直连ChatGPT、Claude、Gemini。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
