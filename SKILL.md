@@ -1,7 +1,7 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 3.2.4
+version: 3.3.0
 description: "出海通 — 国际版AI可用性陪跑。CN2 GIA三网优化，延迟低速度快，独享IP干净不被封。零基础10分钟搭好，AI全程陪跑自动部署，客户端直接发到你手机，扫码直连ChatGPT、Claude、Gemini。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
@@ -19,7 +19,7 @@ tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
 帮我安装出海通
 ```
 
-装完后说"我要出海"就开始。
+装完后说"出海通开始"就启动流程。
 
 ## 为什么选这个方案
 
@@ -83,6 +83,12 @@ https://bwh8l.net
 - 所有破坏性操作（重装系统）会提前警告
 - 面板安装后引导你修改默认密码
 - 安装来源是GitHub开源项目（MHSanaei/3x-ui）
+- 面板默认走HTTP，完成态会提醒你可以加HTTPS
+- 完成后引导你重置API Key，废掉对话中出现过的旧Key
+
+## 披露
+
+本技能的服务器购买链接包含推广关系（affiliate）。你通过该链接购买时，作者会获得佣金。这不影响你的购买价格，也不影响技能的功能。推荐搬瓦工是因为它的CN2 GIA线路和KiwiVM API是当前唯一支持零SSH自动部署的方案。
 
 ## 许可
 
