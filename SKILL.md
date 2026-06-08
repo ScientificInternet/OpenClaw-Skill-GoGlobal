@@ -1,7 +1,7 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 2.5.0
+version: 2.5.1
 description: "出海通 — CN2 GIA三网优化，延迟低速度快，独享IP干净不被封。零基础10分钟搭好，AI全程陪跑自动部署，客户端直接发到你手机，扫码直连ChatGPT、Claude、Gemini。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
@@ -59,7 +59,7 @@ https://bwh8l.net
 | Windows | v2rayN |
 | Mac | V2rayU |
 
-客户端下载页：https://help.bwh8l.net
+客户端下载页：https://help.bwh8l.net/index.html
 
 ## 常见问题
 
