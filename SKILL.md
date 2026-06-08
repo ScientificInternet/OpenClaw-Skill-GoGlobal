@@ -1,42 +1,87 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 2.1.0
-description: "出海通 — 出海基础设施搭建助手。引导用户从购买服务器到连上外网，全程不碰技术。支持搬瓦工KiwiVM API零SSH自动部署。"
+version: 2.2.0
+description: "出海通 — 零基础搭建出海通道。粘贴一行服务器信息，AI自动部署，手机扫码就能用Google、ChatGPT、Claude。全程不碰命令行。"
 author: ScientificInternet
-tags: [cross-border, infrastructure, vps, deployment, proxy]
+tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
 ---
 
-# 出海通 GoGlobal — 出海基础设施一键搭建
+# 出海通 GoGlobal
 
-零基础用户从买服务器到连上外网的完整引导。
+**零基础搭建出海通道。粘贴一行信息，等几分钟，手机扫码就能用。**
 
-## 能做什么
+## 安装
 
-1. 引导购买服务器（推荐搬瓦工）
-2. 通过KiwiVM API自动部署（用户不碰SSH）
-3. 安装3x-ui管理面板并配置节点
-4. 引导手机/电脑安装客户端（iOS/Android/Windows/Mac）
-5. 内置常见问题诊断
+跟 AI 说：
 
-## 面向谁
+```
+帮我安装出海通
+```
 
-完全不懂技术的新手。需要访问Google、Meta、TikTok、ChatGPT、Claude做跨境生意的人。
+装完后说"我要出海"就开始。
 
-## 怎么用
+## 10分钟走完全程
 
-用户粘贴搬瓦工的一行CSV → agent通过API自动部署 → 用户在面板里点几下创建节点 → 手机扫码连上 → 完事。
+```
+第一步：买服务器（搬瓦工，月付$20）
+第二步：复制一行服务器信息给 AI
+第三步：AI 自动装好管理面板
+第四步：面板里点几下创建节点
+第五步：手机装App扫码连上
+第六步：验证 Google / ChatGPT / Claude 能用
+```
 
-## 需要什么
+AI 一步一步带你走，每步等你确认才继续。断了随时回来说"继续"。
 
-- 搬瓦工服务器（推荐$20/月 ECOMMERCE SLA）
-- 浏览器
-- 手机或电脑装客户端
+## 购买服务器
+
+推荐搬瓦工 ECOMMERCE SLA 洛杉矶（$20/月），三网优化，国内连接速度快：
+
+https://scientificinternet.github.io/go/vps/
+
+买完登录 https://bwh81.net ，复制服务器信息给 AI 就行。
+
+## 需要准备什么
+
+| 东西 | 费用 |
+|------|------|
+| 搬瓦工服务器 | $20/月（约140元） |
+| 浏览器 | 免费 |
+| 手机或电脑 | 你已经有了 |
+
+## 支持的客户端
+
+| 设备 | App |
+|------|-----|
+| iPhone/iPad | Shadowrocket / V2Box / Streisand |
+| Android | v2rayNG |
+| Windows | v2rayN |
+| Mac | V2rayU |
+
+## 常见问题
+
+**打不开AI给的链接？** → 先确认登录了bwh81.net，换浏览器或手机流量试试
+
+**安装时间太长？** → 正常2-3分钟，AI会自动检查进度
+
+**面板打不开？** → 确认地址末尾有/（斜杠），AI会帮你排查
+
+**连上了但速度慢？** → 跟AI说"速度慢"，它帮你开BBR加速
+
+**突然连不上了？** → 跟AI说"连不上了"，它帮你一步步排查
+
+**想加更多设备？** → 同一个二维码多设备通用
+
+**想分享给家人？** → 跟AI说，它教你在面板里给每人建独立账号
 
 ## 安全说明
 
-- 用户的KiwiVM API Key仅能操作其自己的VPS，不涉及支付或账户凭证
-- 所有破坏性操作（重装系统）均带数据丢失警告
-- 面板凭据从安装日志提取后，引导用户修改默认密码
-- 防火墙故障排查采用端口放行而非全局关闭
-- 安装脚本来源为GitHub开源仓库（MHSanaei/3x-ui）
+- 你的服务器控制Key只能操作你自己的VPS，不涉及支付或账户密码
+- 所有破坏性操作（重装系统）会提前警告
+- 面板安装后引导你修改默认密码
+- 安装来源是GitHub开源项目（MHSanaei/3x-ui）
+
+## 许可
+
+MIT — © 2026 ScientificInternet
