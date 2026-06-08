@@ -122,6 +122,9 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
   "suspended": "",
   "ve_status": "",
 
+  "deps_pid": "",
+  "deps_check_count": 0,
+
   "install_started": false,
   "install_pid": "",
   "xui_status_checks": 0,
@@ -182,13 +185,16 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 
 **如果包含 permission denied：**
 ```
-这个返回说明当前账户不允许API继续执行。
+这个返回说明当前账户不允许用控制链接继续操作。
 
-如果你这份CSV里的服务器开了两步验证，
-就不要继续重试同一条控制链接了。
-请先换一台API不受限的VPS，或者处理掉这个限制后重新导出新的CSV。
+先不要反复打开同一个链接。
 
-把新的整段CSV重新贴给我，不要删任何字段。
+请回到搬瓦工后台，换一台没有开启两步验证限制的服务器，
+或者关闭相关限制后，重新打开CSV导出页面：
+
+{csv_url}
+
+把新的整段CSV贴给我。
 ```
 设置：waiting_for=csv_input
 
@@ -921,12 +927,30 @@ Skill不允许：
 ```
 先停在下载这一步，不继续后面的导入。
 
-当前下载页打不开，我不能给你编一个备用地址。
-请换网络后再打开：
+当前下载页还是打不开，先不要往后导入。
+请换一个网络，或者换一台设备，再重新打开：
 {clients_page_url}
 
-打开后回我：打开了
+如果打开了，回我：打开了
+如果还是打不开，回我：还打不开
 ```
+设置：waiting_for=clients_page_retry_result, resume_hint=等用户反馈客户端下载页是否终于打开
+
+收到"打开了"后：
+```
+好，下载页已经打开了。
+按你的设备区域把客户端装好。
+装好后回我：装好了
+```
+设置：waiting_for=client_app_installed, resume_hint=等用户确认客户端已安装
+
+收到"还打不开"后：
+```
+先不要继续这台设备上的安装。
+把你的设备类型再回我一次：iPhone / Android / Windows / Mac
+我改走这台设备对应的最短应急安装路径。
+```
+设置：waiting_for=device_type, resume_hint=等用户重新确认设备类型
 
 **二维码扫不了：**
 ```
