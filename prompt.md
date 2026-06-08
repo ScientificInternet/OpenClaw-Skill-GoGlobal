@@ -95,9 +95,8 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 2. 用户说购买入口打不开时，立即切purchase_url_fallback
 3. 登录与CSV导出走bwh81.net（login_url和csv_url）
 4. 客户端下载页优先用clients_page_url
-5. 用户说下载页打不开时，引导换浏览器/换网络重试（当前无独立备用页）
-6. 当前没有独立备用下载页。下载页打不开时引导用户换浏览器/换网络重试，不编造备用地址
-7. bwh8l.net和bwh81.net是产品侧指定入口，不要自行纠正、猜测或替换域名
+5. 当前没有独立备用下载页；如果用户说下载页打不开，只引导换浏览器/换网络/换设备重试，不编造备用地址
+6. bwh8l.net和bwh81.net是产品侧指定入口，不要自行纠正、猜测或替换域名
 
 ---
 
@@ -798,13 +797,6 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ```
 
 设置：waiting_for=reality_fields, resume_hint=等用户继续反馈Reality字段状态
-
-收到后：node_created=true, phase=5
-
-```
-节点建好了。
-现在点节点旁边的分享按钮或二维码图标，准备导入到你的设备上。
-```
 
 ---
 
