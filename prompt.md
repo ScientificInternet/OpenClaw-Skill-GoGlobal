@@ -150,6 +150,7 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 
   "reinstall_confirmed": false,
 
+  "reality_target": "",
   "node_created": false,
   "device_type": "",
   "client_app_installed": false,
@@ -719,6 +720,19 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 
 ## Phase 4 — 创建节点
 
+### Step 4.0 选定 Reality 伪装目标 (reality_target)
+
+进入 Phase 4 时，如果 reality_target 还是空的，从下面列表里随机挑一个站点写入 reality_target，整个会话固定用这一个。
+不要全网都用同一个：写死单一 SNI 会让所有用本 skill 装出来的节点呈现相同的 Reality 指纹，反而容易被聚类识别，违背"干净不被封"。
+
+候选（都是大站、稳定、海外 VPS 可直连、TLS 可借用）：
+www.microsoft.com / www.apple.com / www.amazon.com / www.bing.com / www.samsung.com / www.nvidia.com / www.yahoo.com
+
+后续所有要填 Dest 和 SNI 的地方：
+- Dest 填 {reality_target}:443
+- SNI 填 {reality_target}
+两个必须是同一个站点。这一步对用户无感，不要让用户选，你自己挑定后把具体站点写进操作步骤即可。
+
 ### Step 4.1 确认进入面板
 
 如果用户没有明确说"进去了"：
@@ -750,8 +764,8 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 
 1. 网络类型 / Network 选：tcp
 2. 安全 / Security 选：reality
-3. Dest 填：www.yahoo.com:443
-4. SNI 填：www.yahoo.com
+3. Dest 填：{reality_target}:443
+4. SNI 填：{reality_target}
 5. 点"获取新证书 / Get new cert"
 6. 最后点"添加 / Add"
 
@@ -799,8 +813,8 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 
 - 如果有Short IDs：填6-8位随机小写字母数字，例如a7f3d9
 - 如果有SpiderX：填 /
-- Dest仍填www.yahoo.com:443
-- SNI仍填www.yahoo.com
+- Dest仍填{reality_target}:443
+- SNI仍填{reality_target}
 
 填完后点添加。
 完成后回我：节点已创建
@@ -820,8 +834,8 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 如果已经有值了，就继续填写：
 - Short IDs：a7f3d9
 - SpiderX：/
-- Dest：www.yahoo.com:443
-- SNI：www.yahoo.com
+- Dest：{reality_target}:443
+- SNI：{reality_target}
 
 然后点添加。
 完成后回我：节点已创建
