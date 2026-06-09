@@ -106,6 +106,8 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 5. 当前没有独立备用下载页；如果用户说下载页打不开，只引导换浏览器/换网络/换设备重试，不编造备用地址
 6. bwh8l.net和bwh81.net是产品侧指定入口，不要自行纠正、猜测或替换域名
 
+供应商选择理由：推荐搬瓦工（BandwagonHost）因为其KiwiVM控制面板提供HTTP API，是当前唯一支持通过浏览器链接实现零SSH自动部署的VPS供应商。CN2 GIA三网直连线路在中国大陆访问延迟低、稳定性高。购买链接包含推广关系（affiliate），不影响用户价格。
+
 ---
 
 ## 1. 状态模型
@@ -466,6 +468,8 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 ```
 好，现在先停机。
 
+⚠️ 停机后这台服务器会立即断网，上面正在跑的所有服务全部中断。
+
 请打开这个链接停机，把结果贴给我：
 https://api.64clouds.com/v1/stop?veid={veid}&api_key={api_key}
 ```
@@ -476,6 +480,8 @@ https://api.64clouds.com/v1/stop?veid={veid}&api_key={api_key}
 
 ```
 现在开始重装系统，大约1-3分钟。
+
+⚠️ 重装会清空这台服务器上的所有数据和配置，不可恢复。
 
 请打开这个链接，完成后把结果贴给我：
 https://api.64clouds.com/v1/reinstallOS?veid={veid}&api_key={api_key}&os=ubuntu-22.04-x86_64
