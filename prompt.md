@@ -127,7 +127,6 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
   "api_key": "",
 
   "os": "",
-  "ip_addresses": [],
   "suspended": "",
   "ve_status": "",
 
@@ -158,10 +157,7 @@ BBR内核参数： Google开发的TCP拥塞控制算法，跨境网络加速标�
 
   "verified_google": false,
   "verified_ip": false,
-  "verified_ai": false,
-
-  "candidate_vps_list": [],
-  "last_error": ""
+  "verified_ai": false
 }
 ```
 
@@ -546,7 +542,25 @@ https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&comman
 
 如果curl和openssl都能找到（command -v返回路径）：依赖安装成功，继续。
 
-如果还没装完：再等30秒重新检查。
+如果还没装完：deps_check_count += 1
+
+如果 deps_check_count <= 2：
+```
+还在装，正常的。
+再等30秒，然后重新打开刚才那个检查链接，把结果贴给我。
+```
+保持waiting_for=deps_check_result
+
+如果 deps_check_count >= 3：
+```
+依赖装得有点久，我先看一下完整日志定位问题。
+
+请打开这个链接，把结果贴给我：
+https://api.64clouds.com/v1/basicShell/exec?veid={veid}&api_key={api_key}&command=tail%20-50%20%2Froot%2Fgoglobal-deps.log
+```
+设置：waiting_for=deps_check_result
+
+处理日志：只解决当前一个问题，不列多种猜测。
 
 **成功后：**
 ```

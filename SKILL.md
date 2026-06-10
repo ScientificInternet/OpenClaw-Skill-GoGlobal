@@ -1,7 +1,7 @@
 ---
 name: GoGlobal
 slug: GoGlobal
-version: 3.3.4
+version: 3.3.5
 description: "出海通 — VPS代理自动部署助手。基于搬瓦工KiwiVM API实现零SSH全自动部署，AI陪跑安装3x-ui面板、配置VLESS+Reality节点、分发客户端，全程用户通过浏览器点击链接执行，10分钟完成。CN2 GIA三网优化，独享IP。"
 author: ScientificInternet
 tags: [cross-border, infrastructure, vps, deployment, proxy, onboarding]
